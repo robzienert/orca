@@ -39,12 +39,16 @@ sealed class Message {
     val taskId: String
   }
 
+  interface ApplicationAware {
+    val application: String
+  }
+
   data class TaskStarting(
     override val executionType: Class<out Execution<*>>,
     override val executionId: String,
     override val stageId: String,
     override val taskId: String
-  ) : Message(), TaskLevel {
+  ) : Message(), TaskLevel, ApplicationAware {
     constructor(source: ExecutionLevel, stageId: String, taskId: String) :
       this(source.executionType, source.executionId, stageId, taskId)
 
@@ -58,7 +62,7 @@ sealed class Message {
     override val stageId: String,
     override val taskId: String,
     val status: ExecutionStatus
-  ) : Message(), TaskLevel {
+  ) : Message(), TaskLevel, ApplicationAware {
     constructor(source: TaskLevel, status: ExecutionStatus) :
       this(source.executionType, source.executionId, source.stageId, source.taskId, status)
   }
@@ -69,7 +73,7 @@ sealed class Message {
     override val stageId: String,
     override val taskId: String,
     val taskType: Class<out Task>
-  ) : Message(), TaskLevel {
+  ) : Message(), TaskLevel, ApplicationAware {
     constructor(message: StageLevel, taskId: String, taskType: Class<out Task>) :
       this(message.executionType, message.executionId, message.stageId, taskId, taskType)
   }
@@ -78,7 +82,7 @@ sealed class Message {
     override val executionType: Class<out Execution<*>>,
     override val executionId: String,
     override val stageId: String
-  ) : Message(), StageLevel {
+  ) : Message(), StageLevel, ApplicationAware {
     constructor(source: ExecutionLevel, stageId: String) :
       this(source.executionType, source.executionId, stageId)
   }
@@ -88,7 +92,7 @@ sealed class Message {
     override val executionId: String,
     override val stageId: String,
     val status: ExecutionStatus
-  ) : Message(), StageLevel {
+  ) : Message(), StageLevel, ApplicationAware {
     constructor(source: ExecutionLevel, stageId: String, status: ExecutionStatus) :
       this(source.executionType, source.executionId, stageId, status)
 
@@ -99,13 +103,13 @@ sealed class Message {
   data class ExecutionStarting(
     override val executionType: Class<out Execution<*>>,
     override val executionId: String
-  ) : Message(), ExecutionLevel
+  ) : Message(), ExecutionLevel, ApplicationAware
 
   data class ExecutionComplete(
     override val executionType: Class<out Execution<*>>,
     override val executionId: String,
     val status: ExecutionStatus
-  ) : Message(), ExecutionLevel {
+  ) : Message(), ExecutionLevel, ApplicationAware {
     constructor(source: ExecutionLevel, status: ExecutionStatus) :
       this(source.executionType, source.executionId, status)
   }
