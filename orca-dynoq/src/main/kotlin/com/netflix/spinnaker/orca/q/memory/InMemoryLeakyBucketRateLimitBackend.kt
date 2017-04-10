@@ -16,9 +16,9 @@
 package com.netflix.spinnaker.orca.q.memory
 
 import com.google.common.cache.CacheBuilder
+import com.netflix.spinnaker.config.RateLimitConfiguration
 import com.netflix.spinnaker.orca.q.ratelimit.Rate
 import com.netflix.spinnaker.orca.q.ratelimit.RateLimitBackend
-import com.netflix.spinnaker.config.RateLimitConfiguration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit

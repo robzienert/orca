@@ -16,10 +16,12 @@
 
 package com.netflix.spinnaker.orca.q.memory
 
+import com.netflix.spectator.api.Registry
 import com.netflix.spinnaker.orca.q.Message
 import com.netflix.spinnaker.orca.q.Queue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
+import org.springframework.scheduling.annotation.Scheduled
 import org.threeten.extra.Temporals.chronoUnit
 import java.io.Closeable
 import java.time.Clock
@@ -34,7 +36,8 @@ import javax.annotation.PreDestroy
 
 class InMemoryQueue(
   val clock: Clock,
-  val ackTimeout: Duration = Duration.ofMinutes(1)
+  val ackTimeout: Duration = Duration.ofMinutes(1),
+  val registry: Registry
 ) : Queue, Closeable {
 
   private val log: Logger = getLogger(javaClass)
@@ -44,6 +47,10 @@ class InMemoryQueue(
   private val executor = newSingleThreadScheduledExecutor()
   private val redeliveryWatcher = executor
     .scheduleWithFixedDelay(this::redeliver, 10, 10, MILLISECONDS)
+
+  private val queueDepthId = registry.createId("orca.nu.memory.queueSize")
+  private val unackDepthId = registry.createId("orca.nu.memory.unackSize")
+  private val deliveredMessagesId = registry.createId("orca.nu.memory.redeliveredMessages")
 
   override fun poll(): Message? {
     val message = queue.poll()
@@ -69,10 +76,18 @@ class InMemoryQueue(
     executor.shutdown()
   }
 
+  @Scheduled(fixedDelay = 1000)
+  fun recordMetrics() {
+    registry.gauge(queueDepthId).set(queue.size.toDouble())
+    registry.gauge(unackDepthId).set(unacked.size.toDouble())
+  }
+
   private fun redeliver() {
     unacked.pollAll {
       log.warn("redelivering unacked message ${it.payload}")
       queue.put(DelayedMessage(it.payload, clock.instant(), clock))
+
+      registry.counter(deliveredMessagesId).increment()
     }
   }
 

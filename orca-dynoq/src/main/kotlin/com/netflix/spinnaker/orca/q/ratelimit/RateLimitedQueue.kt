@@ -15,6 +15,7 @@
  */
 package com.netflix.spinnaker.orca.q.ratelimit
 
+import com.netflix.spectator.api.Registry
 import com.netflix.spinnaker.config.RateLimitConfiguration
 import com.netflix.spinnaker.orca.q.Message
 import com.netflix.spinnaker.orca.q.Queue
@@ -26,10 +27,13 @@ import java.util.concurrent.TimeUnit
 class RateLimitedQueue(
   val queue: Queue,
   val backend: RateLimitBackend,
-  val rateLimitConfiguration: RateLimitConfiguration
+  val rateLimitConfiguration: RateLimitConfiguration,
+  val registry: Registry
 ) : Queue, Closeable {
 
   private val log: Logger = LoggerFactory.getLogger(javaClass)
+
+  private val throttledMessagesId = registry.createId("orca.nu.ratelimit.throttledMessages")
 
   override fun poll(): Message? {
     var r: PolledMessageResult
@@ -49,7 +53,10 @@ class RateLimitedQueue(
         if (rate.limiting) {
           queue.push(message, rateLimitConfiguration.delayMs, TimeUnit.MILLISECONDS)
           queue.ack(message)
+
+          registry.counter(throttledMessagesId).increment()
           log.info("rate limited message (application: ${message.application}, capacity: ${rate.capacity}, windowMs: ${rate.windowMs}, delayMs: ${rateLimitConfiguration.delayMs} message: ${message.id})")
+
           return PolledMessageResult(null, false)
         }
         return PolledMessageResult(message, true)
