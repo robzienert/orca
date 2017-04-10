@@ -54,7 +54,7 @@ class StageCompleteHandlerSpec : Spek({
           type = singleTaskStage.type
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, SUCCEEDED)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, "foo", SUCCEEDED)
 
       beforeGroup {
         whenever(repository.retrievePipeline(message.executionId))
@@ -79,6 +79,7 @@ class StageCompleteHandlerSpec : Spek({
         verify(queue).push(ExecutionComplete(
           message.executionType,
           message.executionId,
+          "foo",
           SUCCEEDED
         ))
       }
@@ -100,7 +101,7 @@ class StageCompleteHandlerSpec : Spek({
           type = singleTaskStage.type
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, SUCCEEDED)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, "foo", SUCCEEDED)
 
       beforeGroup {
         whenever(repository.retrievePipeline(message.executionId))
@@ -125,7 +126,8 @@ class StageCompleteHandlerSpec : Spek({
         verify(queue).push(StageStarting(
           message.executionType,
           message.executionId,
-          pipeline.stages.last().id
+          pipeline.stages.last().id,
+          "foo"
         ))
       }
 
@@ -151,7 +153,7 @@ class StageCompleteHandlerSpec : Spek({
           type = singleTaskStage.type
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, SUCCEEDED)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, "foo", SUCCEEDED)
 
       beforeGroup {
         whenever(repository.retrievePipeline(message.executionId))
@@ -189,7 +191,7 @@ class StageCompleteHandlerSpec : Spek({
           type = singleTaskStage.type
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, status)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, "foo", status)
 
       beforeGroup {
         whenever(repository.retrievePipeline(message.executionId))
@@ -218,6 +220,7 @@ class StageCompleteHandlerSpec : Spek({
         verify(queue).push(ExecutionComplete(
           message.executionType,
           message.executionId,
+          "foo",
           status
         ))
       }
@@ -236,7 +239,7 @@ class StageCompleteHandlerSpec : Spek({
         }
 
         context("there are more before stages") {
-          val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.first().id, SUCCEEDED)
+          val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stages.first().id, SUCCEEDED)
           beforeGroup {
             whenever(repository.retrievePipeline(pipeline.id))
               .thenReturn(pipeline)
@@ -252,13 +255,14 @@ class StageCompleteHandlerSpec : Spek({
             verify(queue).push(StageStarting(
               message.executionType,
               message.executionId,
+              "foo",
               pipeline.stages[1].id
             ))
           }
         }
 
         context("it is the last before stage") {
-          val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages[1].id, SUCCEEDED)
+          val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stages[1].id, SUCCEEDED)
           beforeGroup {
             whenever(repository.retrievePipeline(pipeline.id))
               .thenReturn(pipeline)
@@ -274,6 +278,7 @@ class StageCompleteHandlerSpec : Spek({
             verify(queue).push(TaskStarting(
               message.executionType,
               message.executionId,
+              "foo",
               pipeline.stages[2].id,
               "1"
             ))
@@ -291,7 +296,7 @@ class StageCompleteHandlerSpec : Spek({
         }
 
         context("there are more after stages") {
-          val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages[1].id, SUCCEEDED)
+          val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stages[1].id, SUCCEEDED)
           beforeGroup {
             whenever(repository.retrievePipeline(pipeline.id))
               .thenReturn(pipeline)
@@ -307,13 +312,14 @@ class StageCompleteHandlerSpec : Spek({
             verify(queue).push(StageStarting(
               message.executionType,
               message.executionId,
+              "foo",
               pipeline.stages.last().id
             ))
           }
         }
 
         context("it is the last after stage") {
-          val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages.last().id, SUCCEEDED)
+          val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stages.last().id, SUCCEEDED)
           beforeGroup {
             whenever(repository.retrievePipeline(pipeline.id))
               .thenReturn(pipeline)
@@ -329,6 +335,7 @@ class StageCompleteHandlerSpec : Spek({
             verify(queue).push(StageComplete(
               message.executionType,
               message.executionId,
+              "foo",
               pipeline.stages.first().id,
               SUCCEEDED
             ))
@@ -345,7 +352,7 @@ class StageCompleteHandlerSpec : Spek({
           stageWithSyntheticBefore.buildSyntheticStages(this)
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stageByRef("1<1").id, TERMINAL)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stageByRef("1<1").id, TERMINAL)
 
       beforeGroup {
         whenever(repository.retrievePipeline(message.executionId))
@@ -378,7 +385,7 @@ class StageCompleteHandlerSpec : Spek({
           stageWithParallelBranches.buildTasks(this)
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages[0].id, SUCCEEDED)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stages[0].id, SUCCEEDED)
 
       beforeGroup {
         whenever(repository.retrievePipeline(pipeline.id))
@@ -405,7 +412,7 @@ class StageCompleteHandlerSpec : Spek({
           stageWithParallelBranches.buildTasks(this)
         }
       }
-      val message = StageComplete(Pipeline::class.java, pipeline.id, pipeline.stages[0].id, SUCCEEDED)
+      val message = StageComplete(Pipeline::class.java, pipeline.id, "foo", pipeline.stages[0].id, SUCCEEDED)
 
       beforeGroup {
         pipeline.stages.forEach {

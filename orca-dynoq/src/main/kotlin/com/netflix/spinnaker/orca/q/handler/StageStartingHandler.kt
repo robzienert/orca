@@ -69,12 +69,12 @@ open class StageStartingHandler @Autowired constructor(
           if (task == null) {
             TODO("do what? Nothing to do, just indicate end of stage?")
           } else {
-            queue.push(TaskStarting(getExecution().javaClass, getExecution().getId(), getId(), task.id))
+            queue.push(TaskStarting(getExecution().javaClass, getExecution().getId(), getId(), task.id, getExecution().getApplication()))
           }
         }
       } else {
         beforeStages.forEach {
-          queue.push(StageStarting(getExecution().javaClass, getExecution().getId(), it.getId()))
+          queue.push(StageStarting(getExecution().javaClass, getExecution().getId(), it.getId(), getExecution().getApplication()))
         }
       }
     }

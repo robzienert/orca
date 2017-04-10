@@ -82,7 +82,7 @@ open class TaskCompleteHandler
         it.status = NOT_STARTED
       }
       repository.storeStage(this)
-      queue.push(TaskStarting(getExecution().javaClass, getExecution().getId(), getId(), tasks[start].id))
+      queue.push(TaskStarting(getExecution().javaClass, getExecution().getId(), getId(), tasks[start].id, getExecution().getApplication()))
     }
   }
 }

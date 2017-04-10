@@ -36,8 +36,8 @@ import javax.annotation.PreDestroy
 
 class InMemoryQueue(
   val clock: Clock,
-  val ackTimeout: Duration = Duration.ofMinutes(1),
-  val registry: Registry
+  val registry: Registry,
+  val ackTimeout: Duration = Duration.ofMinutes(1)
 ) : Queue, Closeable {
 
   private val log: Logger = getLogger(javaClass)

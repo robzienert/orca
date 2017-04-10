@@ -55,7 +55,7 @@ class RateLimitedQueue(
           queue.ack(message)
 
           registry.counter(throttledMessagesId).increment()
-          log.info("rate limited message (application: ${message.application}, capacity: ${rate.capacity}, windowMs: ${rate.windowMs}, delayMs: ${rateLimitConfiguration.delayMs} message: ${message.id})")
+          log.info("throttling message (application: ${message.application}, capacity: ${rate.capacity}, windowMs: ${rate.windowMs}, delayMs: ${rateLimitConfiguration.delayMs}, message: ${message.id})")
 
           return PolledMessageResult(null, false)
         }
