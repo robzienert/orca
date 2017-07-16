@@ -146,6 +146,12 @@ class PipelineTemplatePipelinePreprocessorSpec extends Specification {
           requisiteStageRefIds: ['tagImage'],
           waitTime: 5
         ]
+      ],
+      templateSource: [
+        template: getClass().getResource("/templates/simple-001.yml").toURI().toString(),
+        bindings: [
+          regions: ['us-east-1', 'us-west-2']
+        ]
       ]
     ]
     assertReflectionEquals(expected, result, ReflectionComparatorMode.IGNORE_DEFAULTS)

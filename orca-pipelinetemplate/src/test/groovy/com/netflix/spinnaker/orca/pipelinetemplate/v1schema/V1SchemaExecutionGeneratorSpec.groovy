@@ -39,7 +39,13 @@ class V1SchemaExecutionGeneratorSpec extends Specification {
     TemplateConfiguration configuration = new TemplateConfiguration(
       pipeline: new PipelineDefinition(
         application: 'orca',
-        name: 'My Template'
+        name: 'My Template',
+        template: [
+          source: 'my-template'
+        ],
+        variables: [
+          foo: 'bar'
+        ]
       )
     )
 
@@ -57,6 +63,12 @@ class V1SchemaExecutionGeneratorSpec extends Specification {
     result.stages*.type == ['bake', 'tagImage']
     result.stages*.requisiteStageRefIds == [[] as Set, ['bake'] as Set]
     result.stages.find { it.type == 'bake' }.baseOs == 'trusty'
+    result.templateSource == [
+      template: 'my-template',
+      bindings: [
+        foo: 'bar'
+      ]
+    ]
   }
 
   @Unroll

@@ -18,6 +18,7 @@ package com.netflix.spinnaker.orca.pipelinetemplate.v1schema;
 import com.netflix.spinnaker.orca.pipelinetemplate.generator.ExecutionGenerator;
 import com.netflix.spinnaker.orca.pipelinetemplate.v1schema.model.PipelineTemplate;
 import com.netflix.spinnaker.orca.pipelinetemplate.v1schema.model.PipelineTemplate.Configuration;
+import com.netflix.spinnaker.orca.pipelinetemplate.v1schema.model.PipelineTemplate.Variable;
 import com.netflix.spinnaker.orca.pipelinetemplate.v1schema.model.TemplateConfiguration;
 
 import java.util.Collections;
@@ -68,6 +69,26 @@ public class V1SchemaExecutionGenerator implements ExecutionGenerator {
       })
       .collect(Collectors.toList()));
 
+    Map<String, Object> source = new HashMap<>();
+    if (configuration.getPipeline().getTemplate() != null) {
+      source.put("template", configuration.getPipeline().getTemplate().getSource());
+    }
+    source.put("bindings", createVariableBindings(template, configuration));
+    pipeline.put("templateSource", source);
+
     return pipeline;
+  }
+
+  private static Map<String, Object> createVariableBindings(PipelineTemplate template, TemplateConfiguration configuration) {
+    HashMap<String, Object> m = new HashMap<>();
+    if (template.getVariables() != null) {
+      template.getVariables().stream()
+        .filter(Variable::hasDefaultValue)
+        .forEach(v -> m.put(v.getName(), v.getDefaultValue()));
+    }
+    if (configuration.getPipeline().getVariables() != null) {
+      m.putAll(configuration.getPipeline().getVariables());
+    }
+    return m;
   }
 }
