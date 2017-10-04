@@ -1,0 +1,72 @@
+/*
+ * Copyright 2017 Netflix, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.netflix.spinnaker.orca.declarative
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.netflix.spinnaker.orca.declarative.exceptions.DeclarativeException
+import com.netflix.spinnaker.orca.pipeline.OrchestrationLauncher
+import com.netflix.spinnaker.orca.pipeline.model.Execution
+import com.netflix.spinnaker.orca.pipeline.model.Orchestration
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
+import java.time.Clock
+
+@Component
+class IntentLauncher
+@Autowired constructor(
+  private val intentProcessors: Set<IntentProcessor<*>>,
+  private val orchestrationLauncher: OrchestrationLauncher,
+  @Qualifier("declarativeObjectMapper") private val mapper: ObjectMapper,
+  private val clock: Clock
+) {
+
+  private val log = LoggerFactory.getLogger(javaClass)
+
+  fun launch(intent: Intent<IntentSpec>, request: IntentInvocationWrapper): List<Orchestration> {
+    val processor = intentProcessor(intent)
+
+    val plan = processor.plan(intent, request.metadata)
+
+    return mutableListOf<Orchestration>().apply {
+      processor.apply(plan, request.metadata).forEach {
+        log.info("Intent launching orchestration (kind: ${intent.kind}, intent: ${request.metadata.id}, orchestration: ${it.id}")
+
+        configureOrchestration(it, request.metadata.origin)
+        add(orchestrationLauncher.persistAndStart(it))
+      }
+    }
+  }
+
+  private fun configureOrchestration(orchestration: Orchestration, o: String) {
+    orchestration.apply {
+      executionEngine = Execution.ExecutionEngine.v3
+      buildTime = clock.millis()
+      authentication = Execution.AuthenticationDetails.build().orElse(Execution.AuthenticationDetails())
+      origin = o
+    }
+  }
+
+  private fun <I : Intent<IntentSpec>> intentProcessor(intent: I)
+    = intentProcessors.find { it.supports(intent) }.let {
+      if (it == null) {
+        throw DeclarativeException("Could not find processor for intent ${intent.javaClass.simpleName}")
+      }
+      // TODO rz - GROSS AND WRONG
+      return@let it as IntentProcessor<I>
+    }
+}
