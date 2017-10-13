@@ -40,6 +40,7 @@ class IntentLauncher
 
     val plan = processor.plan(intent, request.metadata)
     // TODO rz - persist intent, plan
+    // TODO rz - generate plan summary
 
     return mutableListOf<Orchestration>().apply {
       plan.orchestrations.forEach {

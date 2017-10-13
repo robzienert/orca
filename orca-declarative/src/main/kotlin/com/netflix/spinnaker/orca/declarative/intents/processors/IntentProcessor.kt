@@ -39,15 +39,4 @@ interface IntentProcessor<I : Intent<IntentSpec>> {
    * reorder dependencies as necessary?
    */
   fun plan(intent: I, metadata: IntentMetadata): IntentPlan<I>
-
-  /**
-   * Applies an IntentPlan. Prior to applying this plan, the current state must
-   * be read and the IntentPlan calculated again. If the two plans differ in any
-   * way, the function must fail.
-   *
-   * TODO rz - Thinking that this should be removed entirely. We already have the
-   * orchestrations that we'll use to make changes, we should just use those
-   * instead of trying to recalc.
-   */
-//  fun apply(plan: IntentPlan<I>, metadata: IntentMetadata): List<Orchestration>
 }
