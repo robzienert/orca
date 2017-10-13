@@ -24,7 +24,7 @@ data class IntentInvocationWrapper(
   val schema: String,
   val metadata: IntentMetadata,
   val intents: List<Intent<*>>,
-  val plan: Boolean = false
+  val dryRun: Boolean = false
 )
 
 // The data fields that must be set from the orchestration request that is called

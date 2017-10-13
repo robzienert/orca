@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.spinnaker.orca.declarative.pipelines
+package com.netflix.spinnaker.orca.declarative.intents.processors
 
-import com.netflix.spinnaker.orca.declarative.tasks.InvokeIntentTask
-import com.netflix.spinnaker.orca.pipeline.StageDefinitionBuilder
-import com.netflix.spinnaker.orca.pipeline.TaskNode
-import com.netflix.spinnaker.orca.pipeline.model.Execution
-import com.netflix.spinnaker.orca.pipeline.model.Stage
+import com.netflix.spinnaker.orca.declarative.Intent
+import com.netflix.spinnaker.orca.declarative.IntentMetadata
+import com.netflix.spinnaker.orca.declarative.IntentPlan
+import com.netflix.spinnaker.orca.declarative.IntentSpec
+import com.netflix.spinnaker.orca.declarative.intents.SpinnakerFileIntent
 import org.springframework.stereotype.Component
 
 @Component
-class InvokeIntentStage : StageDefinitionBuilder {
+class SpinnakerFileIntentProcessor : IntentProcessor<SpinnakerFileIntent> {
 
-  override fun <T : Execution<T>?> taskGraph(stage: Stage<T>, builder: TaskNode.Builder) {
-    builder.withTask("invokeIntents", InvokeIntentTask::class.java)
-    // TODO rz - add monitor intents task?
-  }
+  override fun supports(intent: Intent<IntentSpec>) = intent is SpinnakerFileIntent
+  override fun plan(intent: SpinnakerFileIntent, metadata: IntentMetadata) = IntentPlan(intent, listOf())
 }

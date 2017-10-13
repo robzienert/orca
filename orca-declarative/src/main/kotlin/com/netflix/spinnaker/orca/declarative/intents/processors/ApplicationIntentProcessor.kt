@@ -19,9 +19,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.spinnaker.orca.declarative.Intent
 import com.netflix.spinnaker.orca.declarative.IntentMetadata
 import com.netflix.spinnaker.orca.declarative.IntentPlan
-import com.netflix.spinnaker.orca.declarative.IntentProcessor
 import com.netflix.spinnaker.orca.declarative.intents.ApplicationIntent
+import com.netflix.spinnaker.orca.declarative.intents.ApplicationSpec
 import com.netflix.spinnaker.orca.front50.Front50Service
+import com.netflix.spinnaker.orca.front50.model.Application
 import com.netflix.spinnaker.orca.pipeline.StageDefinitionBuilder
 import com.netflix.spinnaker.orca.pipeline.model.Orchestration
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,10 +38,11 @@ class ApplicationIntentProcessor
   override fun supports(intent: Intent<*>) = intent is ApplicationIntent
 
   override fun plan(intent: ApplicationIntent, metadata: IntentMetadata): IntentPlan<ApplicationIntent> {
-    return IntentPlan(
-      intent,
-      listOf(Orchestration(metadata.application).apply {
-        name = "Update application"
+    val app = front50Service.get(intent.spec.name)
+
+    if (app == null || containsChanges(app, intent.spec)) {
+      return IntentPlan(intent, listOf(Orchestration(metadata.application).apply {
+        name = if (app == null) "Create application" else "Update application"
         description = "Converging on external state intent"
         isLimitConcurrent = true
         isKeepWaitingPipelines = true
@@ -52,11 +54,14 @@ class ApplicationIntentProcessor
           mapper.convertValue(intent.spec, Map::class.java) as Map<String, Any>,
           null,
           null))
-      })
-    )
+      }))
+    } else {
+      return IntentPlan(intent, listOf())
+    }
   }
 
-  override fun apply(plan: IntentPlan<ApplicationIntent>, metadata: IntentMetadata)
-    // TODO rz - perform a plan and verify that state has not changed since plan was generated
-    = plan.orchestrations
+  private fun containsChanges(app: Application, spec: ApplicationSpec): Boolean {
+    // TODO rz - calc if any properties have changed from what is stored and what is desired
+    return true
+  }
 }

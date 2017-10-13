@@ -18,7 +18,6 @@ package com.netflix.spinnaker.orca.declarative
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.github.jonpeterson.jackson.module.versioning.JsonSerializeToVersion
-import com.netflix.spinnaker.orca.pipeline.model.Orchestration
 
 /**
  * An Intent represents a new, discrete desired state. An Intent can contain
@@ -54,35 +53,3 @@ abstract class Intent<out S : IntentSpec>
  * A typed model of an Intent's configuration.
  */
 interface IntentSpec
-
-/**
- * The IntentProcessor is responsible for performing plan and apply operations
- * on a specific Intent.
- */
-interface IntentProcessor<I : Intent<IntentSpec>> {
-
-  fun supports(intent: Intent<IntentSpec>): Boolean
-
-  /**
-   * Performs a plan for its configured state. The function should be responsible
-   * for both collecting the state, as well as creating the diff of state.
-   */
-  fun plan(intent: I, metadata: IntentMetadata): IntentPlan<I>
-
-  /**
-   * Applies an IntentPlan. Prior to applying this plan, the current state must
-   * be read and the IntentPlan calculated again. If the two plans differ in any
-   * way, the function must fail.
-   */
-  fun apply(plan: IntentPlan<I>, metadata: IntentMetadata): List<Orchestration>
-}
-
-data class IntentPlan<out I : Intent<IntentSpec>>(
-  val intent: I,
-
-  val orchestrations: List<Orchestration>,
-
-  // Whether or not the plan should apply its state, even if the target system's
-  // state has changed since the plan was initially generated. Default is true.
-  val overrideState: Boolean = true
-)

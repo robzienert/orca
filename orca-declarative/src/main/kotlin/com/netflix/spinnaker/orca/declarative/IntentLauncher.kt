@@ -15,14 +15,13 @@
  */
 package com.netflix.spinnaker.orca.declarative
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.spinnaker.orca.declarative.exceptions.DeclarativeException
+import com.netflix.spinnaker.orca.declarative.intents.processors.IntentProcessor
 import com.netflix.spinnaker.orca.pipeline.OrchestrationLauncher
 import com.netflix.spinnaker.orca.pipeline.model.Execution
 import com.netflix.spinnaker.orca.pipeline.model.Orchestration
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.time.Clock
 
@@ -31,7 +30,6 @@ class IntentLauncher
 @Autowired constructor(
   private val intentProcessors: Set<IntentProcessor<*>>,
   private val orchestrationLauncher: OrchestrationLauncher,
-  @Qualifier("declarativeObjectMapper") private val mapper: ObjectMapper,
   private val clock: Clock
 ) {
 
@@ -41,20 +39,24 @@ class IntentLauncher
     val processor = intentProcessor(intent)
 
     val plan = processor.plan(intent, request.metadata)
+    // TODO rz - persist intent, plan
 
     return mutableListOf<Orchestration>().apply {
-      processor.apply(plan, request.metadata).forEach {
+      plan.orchestrations.forEach {
         log.info("Intent launching orchestration (kind: ${intent.kind}, intent: ${request.metadata.id}, orchestration: ${it.id}")
-
         configureOrchestration(it, request.metadata.origin)
-        add(orchestrationLauncher.persistAndStart(it))
+
+        // TODO rz - track orchestration in intentrepository
+        if (!request.dryRun) {
+          add(orchestrationLauncher.persistAndStart(it))
+        }
       }
+      // TODO rz - trigger monitor intent orchestration if intent has any children
     }
   }
 
   private fun configureOrchestration(orchestration: Orchestration, o: String) {
     orchestration.apply {
-      executionEngine = Execution.ExecutionEngine.v3
       buildTime = clock.millis()
       authentication = Execution.AuthenticationDetails.build().orElse(Execution.AuthenticationDetails())
       origin = o
@@ -63,10 +65,10 @@ class IntentLauncher
 
   private fun <I : Intent<IntentSpec>> intentProcessor(intent: I)
     = intentProcessors.find { it.supports(intent) }.let {
-      if (it == null) {
-        throw DeclarativeException("Could not find processor for intent ${intent.javaClass.simpleName}")
+        if (it == null) {
+          throw DeclarativeException("Could not find processor for intent ${intent.javaClass.simpleName}")
+        }
+        // TODO rz - GROSS AND WRONG
+        return@let it as IntentProcessor<I>
       }
-      // TODO rz - GROSS AND WRONG
-      return@let it as IntentProcessor<I>
-    }
 }
