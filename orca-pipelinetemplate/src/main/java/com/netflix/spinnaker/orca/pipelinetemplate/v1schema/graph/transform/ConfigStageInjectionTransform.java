@@ -77,6 +77,21 @@ public class ConfigStageInjectionTransform implements PipelineTemplateVisitor {
     List<StageDefinition> addStages = new ArrayList<>();
     List<StageDefinition> templateStages = pipelineTemplate.getStages();
 
+    // Trim any removed partials first
+    ConditionalStanzaTransform.evaluateConditionals(templateStages)
+      .stream()
+      .filter(StageDefinition::getRemoved)
+      .forEach(conditionalStage -> templateStages
+        .stream()
+        .filter(childStage -> childStage.getDependsOn().removeIf(conditionalStage.getId()::equals))
+        .forEach(childStage -> childStage.getDependsOn().addAll(conditionalStage.getDependsOn())));
+
+    templateStages.removeAll(ConditionalStanzaTransform.evaluateConditionals(templateStages)
+      .stream()
+      .filter(StageDefinition::getRemoved)
+      .collect(Collectors.toList())
+    );
+
     // For each "partial" type stage in the graph, inject its internal stage graph into the main template, then
     // delete the "partial" type stages. Root-level partial stages will inherit the placeholder's dependsOn values,
     // and stages that had dependsOn references to the placeholder will be reassigned to partial leaf nodes.

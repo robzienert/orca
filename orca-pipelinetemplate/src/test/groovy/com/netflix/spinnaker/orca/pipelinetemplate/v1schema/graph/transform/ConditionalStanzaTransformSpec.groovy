@@ -28,7 +28,7 @@ class ConditionalStanzaTransformSpec extends Specification {
     pipeline: new PipelineDefinition(variables: [:])
   )
 
-  @Subject ConditionalStanzaTransform subject = new ConditionalStanzaTransform(configuration, [:])
+  @Subject ConditionalStanzaTransform subject = new ConditionalStanzaTransform(configuration)
 
   def 'should remove falsy conditional stages'() {
     given:

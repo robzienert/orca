@@ -1,0 +1,22 @@
+---
+schema: "1"
+id: conditionalStage
+metadata:
+  name: Conditional stage test
+  description: Tests conditional expressions
+variables:
+- name: includeStage
+stages:
+- id: foo
+  type: partial.myPartial
+  config: {}
+  when:
+  - "{{ includeStage }}"
+
+partials:
+- id: myPartial
+  stages:
+  - id: wait
+    type: wait
+    config:
+      waitTime: 5
