@@ -106,10 +106,10 @@ class StartExecutionHandler(
     }
     return pipelineConfigId?.let { configId ->
       val criteria = ExecutionCriteria().setLimit(1).setStatuses(RUNNING)
-      !repository
+      repository
         .retrievePipelinesForPipelineConfigId(configId, criteria)
-        .toList()
-        .isEmpty()
+        .iterator()
+        .hasNext()
     } == true
   }
 
