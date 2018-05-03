@@ -108,9 +108,8 @@ class StartExecutionHandler(
       val criteria = ExecutionCriteria().setLimit(1).setStatuses(RUNNING)
       !repository
         .retrievePipelinesForPipelineConfigId(configId, criteria)
-        .isEmpty
-        .toBlocking()
-        .first()
+        .toList()
+        .isEmpty()
     } == true
   }
 

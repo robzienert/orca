@@ -32,9 +32,6 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.jetbrains.spek.api.lifecycle.CachingMode.GROUP
 import org.jetbrains.spek.subject.SubjectSpek
-import rx.Observable
-import rx.Observable.empty
-import rx.Observable.just
 import java.time.Instant.now
 import java.util.*
 import kotlin.math.absoluteValue
@@ -62,7 +59,7 @@ object StartWaitingExecutionsHandlerTest : SubjectSpek<StartWaitingExecutionsHan
             configId,
             ExecutionCriteria().setStatuses(NOT_STARTED).setLimit(Int.MAX_VALUE)
           )
-        ) doReturn empty<Execution>()
+        ) doReturn listOf<Execution>()
       }
 
       afterGroup(::resetMocks)
@@ -88,7 +85,7 @@ object StartWaitingExecutionsHandlerTest : SubjectSpek<StartWaitingExecutionsHan
               configId,
               ExecutionCriteria().setStatuses(NOT_STARTED).setLimit(Int.MAX_VALUE)
             )
-          ) doReturn just(waitingPipeline)
+          ) doReturn listOf(waitingPipeline)
         }
 
         afterGroup(::resetMocks)
@@ -109,7 +106,7 @@ object StartWaitingExecutionsHandlerTest : SubjectSpek<StartWaitingExecutionsHan
               configId,
               ExecutionCriteria().setStatuses(NOT_STARTED).setLimit(Int.MAX_VALUE)
             )
-          ) doReturn just(waitingPipeline)
+          ) doReturn listOf(waitingPipeline)
         }
 
         afterGroup(::resetMocks)
@@ -147,7 +144,7 @@ object StartWaitingExecutionsHandlerTest : SubjectSpek<StartWaitingExecutionsHan
               configId,
               ExecutionCriteria().setStatuses(NOT_STARTED).setLimit(Int.MAX_VALUE)
             )
-          ) doReturn Observable.from(waitingPipelines)
+          ) doReturn listOf(waitingPipelines)
         }
 
         afterGroup(::resetMocks)
@@ -172,7 +169,7 @@ object StartWaitingExecutionsHandlerTest : SubjectSpek<StartWaitingExecutionsHan
               configId,
               ExecutionCriteria().setStatuses(NOT_STARTED).setLimit(Int.MAX_VALUE)
             )
-          ) doReturn Observable.from(waitingPipelines)
+          ) doReturn listOf(waitingPipelines)
         }
 
         afterGroup(::resetMocks)

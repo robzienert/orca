@@ -42,8 +42,6 @@ class StartWaitingExecutionsHandler(
     val criteria = ExecutionCriteria().setStatuses(NOT_STARTED).setLimit(Int.MAX_VALUE)
     repository
       .retrievePipelinesForPipelineConfigId(message.pipelineConfigId, criteria)
-      .toBlocking()
-      .toIterable()
       .let { pipelines ->
         if (message.purgeQueue) {
           pipelines
