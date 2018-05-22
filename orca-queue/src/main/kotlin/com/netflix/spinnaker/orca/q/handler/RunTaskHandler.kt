@@ -23,8 +23,6 @@ import com.netflix.spinnaker.orca.ExecutionStatus.*
 import com.netflix.spinnaker.orca.exceptions.ExceptionHandler
 import com.netflix.spinnaker.orca.exceptions.TimeoutException
 import com.netflix.spinnaker.orca.ext.failureStatus
-import com.netflix.spinnaker.orca.ext.shouldContinueOnFailure
-import com.netflix.spinnaker.orca.ext.shouldFailPipeline
 import com.netflix.spinnaker.orca.pipeline.model.Execution
 import com.netflix.spinnaker.orca.pipeline.model.Stage
 import com.netflix.spinnaker.orca.pipeline.persistence.ExecutionRepository
@@ -78,6 +76,7 @@ class RunTaskHandler(
           try {
             task.checkForTimeout(stage, taskModel, message)
           } catch (e: TimeoutException) {
+            registry.timeoutCounter(stage.type, taskModel.name).increment()
             task.onTimeout(stage)
             throw e
           }
@@ -142,7 +141,6 @@ class RunTaskHandler(
       "task.invocations.duration.withType" to commonTags + detailedTags
     ).forEach {
       name, tags ->
-        val id = registry.createId(name).withTags(tags)
         registry.timer(name, tags).record(elapsedMillis, TimeUnit.MILLISECONDS)
     }
   }
@@ -219,6 +217,11 @@ class RunTaskHandler(
       }
     }
   }
+
+  private fun Registry.timeoutCounter(stageType: String, taskType: String) =
+    counter(
+      createId("queue.task.timeouts").withTags("stageType", stageType, "taskType", taskType)
+    )
 
   private fun Execution.pausedDurationRelativeTo(instant: Instant?): Duration {
     val pausedDetails = paused
