@@ -23,6 +23,7 @@ import com.netflix.spinnaker.orca.ExecutionStatus.*
 import com.netflix.spinnaker.orca.exceptions.ExceptionHandler
 import com.netflix.spinnaker.orca.exceptions.TimeoutException
 import com.netflix.spinnaker.orca.ext.failureStatus
+import com.netflix.spinnaker.orca.pipeline.DynamicTaskRetryProvider
 import com.netflix.spinnaker.orca.pipeline.model.Execution
 import com.netflix.spinnaker.orca.pipeline.model.Stage
 import com.netflix.spinnaker.orca.pipeline.persistence.ExecutionRepository
@@ -56,6 +57,7 @@ class RunTaskHandler(
   private val tasks: Collection<Task>,
   private val clock: Clock,
   private val exceptionHandlers: List<ExceptionHandler>,
+  private val dynamicTaskRetryProvider: DynamicTaskRetryProvider,
   private val registry: Registry
 ) : OrcaMessageHandler<RunTask>, ExpressionAware, AuthenticationAware {
 
@@ -163,8 +165,11 @@ class RunTaskHandler(
   private fun Task.backoffPeriod(taskModel: com.netflix.spinnaker.orca.pipeline.model.Task, stage: Stage): TemporalAmount =
     when (this) {
       is RetryableTask -> Duration.ofMillis(
-        getDynamicBackoffPeriod(stage, Duration.ofMillis(System.currentTimeMillis() - (taskModel.startTime
-          ?: 0)))
+        dynamicTaskRetryProvider.backoff(
+          this,
+          getDynamicBackoffPeriod(stage, Duration.ofMillis(System.currentTimeMillis() - (taskModel.startTime ?: 0))),
+          stage
+        )
       )
       else             -> Duration.ofSeconds(1)
     }
@@ -184,12 +189,15 @@ class RunTaskHandler(
       if (startTime != null) {
         val pausedDuration = stage.execution.pausedDurationRelativeTo(startTime)
         val elapsedTime = Duration.between(startTime, clock.instant())
-        val actualTimeout = (
-          if (this is OverridableTimeoutRetryableTask && stage.parentWithTimeout.isPresent)
-            stage.parentWithTimeout.get().timeout.get().toDuration()
+        val actualTimeout = dynamicTaskRetryProvider.timeout(
+          this,
+          (if (this is OverridableTimeoutRetryableTask && stage.parentWithTimeout.isPresent)
+            stage.parentWithTimeout.get().timeout.get()
           else
-            timeout.toDuration()
-          )
+            timeout
+          ),
+          stage
+        ).toDuration()
         if (elapsedTime.minus(pausedDuration) > actualTimeout) {
           val durationString = formatTimeout(elapsedTime.toMillis())
           val msg = StringBuilder("${javaClass.simpleName} of stage ${stage.name} timed out after $durationString. ")
