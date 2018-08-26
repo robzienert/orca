@@ -47,6 +47,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  */
 public class ContextParameterProcessor {
 
+  public final static String SUMMARY_RESULT_KEY = "expressionEvaluationSummary";
+
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final static ObjectMapper mapper = OrcaObjectMapper.newInstance();
@@ -61,6 +63,7 @@ public class ContextParameterProcessor {
     expressionEvaluator = new PipelineExpressionEvaluator(contextFunctionConfiguration);
   }
 
+  // TODO rz - Change response to a data class w/ separate result & summary props
   public Map<String, Object> process(Map<String, Object> source, Map<String, Object> context, boolean allowUnknownKeys) {
     if (source.isEmpty()) {
       return new HashMap<>();
@@ -79,7 +82,7 @@ public class ContextParameterProcessor {
     }
 
     if (summary.getFailureCount() > 0) {
-      result.put("expressionEvaluationSummary", summary.getExpressionResult());
+      result.put(SUMMARY_RESULT_KEY, summary.getExpressionResult());
     }
 
     return result;

@@ -16,6 +16,9 @@
 
 package com.netflix.spinnaker.orca.web.config
 
+import com.netflix.spinnaker.orca.model.EvaluateExpressionRequest
+import org.springframework.validation.Validator
+
 import javax.servlet.*
 import javax.servlet.http.HttpServletResponse
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -79,5 +82,10 @@ class WebConfiguration extends WebMvcConfigurerAdapter {
 
       public void destroy() {}
     }
+  }
+
+  @Bean
+  Validator evaluateExpressionRequestValidator() {
+    return new EvaluateExpressionRequest.RequestValidator();
   }
 }
