@@ -95,6 +95,14 @@ subprojects {
       }
     }
   }
+
+  afterEvaluate {
+    if (name != "orca-bom" && name != "orca-api") {
+      dependencies {
+        annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+      }
+    }
+  }
 }
 
 defaultTasks ":orca-web:run"
