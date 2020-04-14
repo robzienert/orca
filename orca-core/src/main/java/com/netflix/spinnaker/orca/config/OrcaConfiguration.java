@@ -24,10 +24,7 @@ import com.netflix.spinnaker.config.PluginsAutoConfiguration;
 import com.netflix.spinnaker.kork.core.RetrySupport;
 import com.netflix.spinnaker.kork.dynamicconfig.DynamicConfigService;
 import com.netflix.spinnaker.kork.expressions.ExpressionFunctionProvider;
-import com.netflix.spinnaker.orca.DefaultStageResolver;
-import com.netflix.spinnaker.orca.DynamicStageResolver;
-import com.netflix.spinnaker.orca.StageResolver;
-import com.netflix.spinnaker.orca.TaskResolver;
+import com.netflix.spinnaker.orca.*;
 import com.netflix.spinnaker.orca.api.pipeline.Task;
 import com.netflix.spinnaker.orca.api.pipeline.graph.StageDefinitionBuilder;
 import com.netflix.spinnaker.orca.api.simplestage.SimpleStage;
@@ -57,6 +54,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -248,5 +246,10 @@ public class OrcaConfiguration {
   public CompoundExecutionOperator compoundExecutionOperator(
       ExecutionRepository repository, ExecutionRunner runner, RetrySupport retrySupport) {
     return new CompoundExecutionOperator(repository, runner, retrySupport);
+  }
+
+  @Bean
+  public static OrcaSdkFactory orcaSdkFactory(ApplicationContext applicationContext) {
+    return new OrcaSdkFactory(applicationContext);
   }
 }

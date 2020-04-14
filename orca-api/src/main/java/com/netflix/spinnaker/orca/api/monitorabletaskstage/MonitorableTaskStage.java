@@ -15,6 +15,27 @@
  */
 package com.netflix.spinnaker.orca.api.monitorabletaskstage;
 
-import org.pf4j.ExtensionPoint;
+import com.netflix.spinnaker.kork.plugins.api.PluginSdks;
+import com.netflix.spinnaker.orca.api.pipeline.RetryableTask;
+import com.netflix.spinnaker.orca.api.pipeline.graph.StageDefinitionBuilder;
+import com.netflix.spinnaker.orca.api.pipeline.graph.TaskNode;
+import com.netflix.spinnaker.orca.api.pipeline.models.StageExecution;
+import javax.annotation.Nonnull;
 
-public interface MonitorableTaskStage extends ExtensionPoint {}
+public abstract class MonitorableTaskStage implements StageDefinitionBuilder {
+
+  protected final PluginSdks pluginSdks;
+
+  public MonitorableTaskStage(PluginSdks pluginSdks) {
+    this.pluginSdks = pluginSdks;
+  }
+
+  protected abstract <T extends RetryableTask> Class<T> getActionTask();
+
+  protected abstract <T extends MonitoringTask> Class<T> getMonitorTask();
+
+  @Override
+  public void taskGraph(@Nonnull StageExecution stage, @Nonnull TaskNode.Builder builder) {
+    builder.withTask("submitTask", getActionTask()).withTask("monitorTask", getMonitorTask());
+  }
+}
