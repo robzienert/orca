@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+import "google/rpc/status.proto";
+
+message StageExecutionCommand {
+  string name = 1;
+  string id = 5;
+  string pipelineExecutionId = 2;
+  string pipelineConfigId = 3;
+
+  repeated StageExecutionOutput upstreamStageOutputs = 4;
+}
+
+message StageExecutionStatus {
+  string name = 1;
+  string id = 2;
+  string pipelineExecutionId = 3;
+  string status = 4;
+  google.protobuf.Any context = 5;
+  google.protobuf.Timestamp startedAt = 6;
+  string type = 7;
+  repeated StageExecutionTaskStatus tasks = 8;
+}
+
+message StageExecutionTaskStatus {
+  string name = 1;
+  string status = 2;
+  google.protobuf.Any outputs = 3;
+  google.protobuf.Timestamp startTime = 4;
+  google.protobuf.Timestamp endTime = 5;
+  string description = 6;
+}
+
+message StageExecuted {
+  string name = 1;
+  string status = 2;
+  StageExecutionOutput outputs = 3;
+
+  google.rpc.Status error = 4;
+}
+
+message StageExecutionOutput {
+  map<string, bytes> data = 1;
+}

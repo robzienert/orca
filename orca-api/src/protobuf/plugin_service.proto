@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+import "google/rpc/status.proto";
+
+service PluginService {
+  rpc registerStageHandler(RegisterStageHandlerRequest) returns (RegisterStageHandlerResponse) {}
+//  rpc registerTrigger(RegisterTriggerRequest) returns (RegisterTriggerResponse) {}
+  // rpc overrideTask
+  // rpc registerSpelFunction
+  // rpc registerPipelineExecutionPreprocessor
+  // rpc registerStageExecutionPreprocessor
+  // rpc registerEventListener
+  // rpc registerPersister
+}
+
+message RegisterStageHandlerRequest {
+  // name is the stage "type" that orca will use to represent the stage.
+  string name = 1;
+
+  // aliases are additional names that the stage handler will be known to orca as.
+  repeated string aliases = 2;
+
+  // callback informs Spinnaker how the stage handler should be invoked.
+  Callback callback = 3;
+
+  // inputs define the list of required configuration inputs into the stage.
+  repeated Input inputs = 4;
+
+//  string description = 2;
+}
+
+message RegisterStageHandlerResponse {
+  // successful marks whether or not the stage was successfully registered.
+  bool successful = 1;
+
+  oneof result {
+    google.rpc.Status error = 2;
+    google.protobuf.Any response = 3;
+  }
+}
+
+message Input {
+  string name = 1;
+  string type = 2;
+  string description = 3;
+  repeated string options = 4;
+}
+
+message Callback {
+  message Http {
+    string uri = 1;
+    string method = 2;
+    map<string, string> headers = 3;
+  }
+
+  message Pubsub {
+    string queue = 1;
+    string provider = 2;
+    bytes providerConfig = 3;
+    map<string, google.protobuf.Any> headers = 4;
+  }
+
+  oneof transit {
+    Http http = 1;
+    Pubsub pubsub = 2;
+  }
+}
