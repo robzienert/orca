@@ -212,17 +212,7 @@ class TargetServerGroup {
       /**
        * "Oldest Server Group"
        */
-        oldest_asg_dynamic,
-      /**
-       * "(Deprecated) Current Server Group"
-       */
-        @Deprecated
-        current_asg,
-      /**
-       * "(Deprecated) Last Server Group"
-       */
-        @Deprecated
-        ancestor_asg,
+        oldest_asg_dynamic
 
       boolean isDynamic() {
         return this.name().endsWith("dynamic")

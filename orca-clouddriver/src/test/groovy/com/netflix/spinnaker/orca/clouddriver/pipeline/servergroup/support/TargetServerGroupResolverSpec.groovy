@@ -51,11 +51,11 @@ class TargetServerGroupResolverSpec extends Specification {
       cluster: "test-app",
       credentials: "testCreds",
       locations: [new Location(type: Location.Type.REGION, value: "north-pole")],
-      target: TargetServerGroup.Params.Target.current_asg,
+      target: TargetServerGroup.Params.Target.current_asg_dynamic,
     ))
 
     then:
-    1 * oort.getTargetServerGroup("test", "testCreds", "test-app", "abc", "north-pole", "current_asg") >>
+    1 * oort.getTargetServerGroup("test", "testCreds", "test-app", "abc", "north-pole", "current_asg_dynamic") >>
       new Response("clouddriver", 200, 'ok', [], new TypedString(mapper.writeValueAsString([
         name  : "test-app-v010",
         region: "north-pole",
