@@ -174,8 +174,8 @@ class TriggerDeserializer :
           get("rebake")?.booleanValue() == true,
           get("dryRun")?.booleanValue() == true,
           get("strategy")?.booleanValue() == true,
-            get("parentExecutionId").textValue(),
-            get("parentPipelineStageId").textValue()
+          get("parentExecutionId").textValue(),
+          get("parentPipelineStageId").textValue()
         )
         looksLikeCustom() -> {
           // chooses the first custom deserializer to keep behavior consistent
