@@ -19,10 +19,10 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.JsonNode
 import com.netflix.spinnaker.kork.exceptions.SystemException
 import com.netflix.spinnaker.orca.api.pipeline.models.Trigger
+import com.netflix.spinnaker.orca.pipeline.model.PipelineRefTrigger
 import com.netflix.spinnaker.orca.pipeline.model.support.CustomTriggerDeserializerSupplier
 import com.netflix.spinnaker.orca.pipeline.model.support.listValue
 import com.netflix.spinnaker.orca.pipeline.model.support.mapValue
-import com.netflix.spinnaker.orca.sql.pipeline.persistence.PipelineRefTrigger
 
 class PipelineRefTriggerDeserializerSupplier : CustomTriggerDeserializerSupplier {
 
