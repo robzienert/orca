@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.spinnaker.orca.sql.pipeline.persistence
+
+package com.netflix.spinnaker.orca.pipeline.model
 
 import com.netflix.spinnaker.kork.artifacts.model.Artifact
 import com.netflix.spinnaker.kork.artifacts.model.ExpectedArtifact
 import com.netflix.spinnaker.orca.api.pipeline.models.PipelineExecution
 import com.netflix.spinnaker.orca.api.pipeline.models.Trigger
-import com.netflix.spinnaker.orca.pipeline.model.PipelineTrigger
 
-/**
- * A trigger type used by SQL implementations to store a [PipelineTrigger] without embedding the entire parent
- * [PipelineExecution]. Instead of embedding, only the execution ID is stored, and then eagerly loaded at
- * deserialization time.
- */
 data class PipelineRefTrigger(
   private val type: String = "pipelineRef",
   private val correlationId: String? = null,

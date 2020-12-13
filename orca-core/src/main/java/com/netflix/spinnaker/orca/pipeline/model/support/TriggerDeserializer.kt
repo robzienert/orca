@@ -31,6 +31,7 @@ import com.netflix.spinnaker.orca.pipeline.model.JenkinsTrigger
 import com.netflix.spinnaker.orca.pipeline.model.NexusTrigger
 import com.netflix.spinnaker.orca.pipeline.model.PipelineTrigger
 import com.netflix.spinnaker.orca.pipeline.model.PluginTrigger
+import com.netflix.spinnaker.orca.pipeline.model.PipelineRefTrigger
 
 class TriggerDeserializer :
   StdDeserializer<Trigger>(Trigger::class.java) {
@@ -163,6 +164,19 @@ class TriggerDeserializer :
           get("binaryUrl").textValue(),
           get("preferred").booleanValue()
         )
+        looksLikePipelineRefTrigger() -> PipelineRefTrigger(
+          get("type").textValue(),
+          get("correlationId")?.textValue(),
+          get("user")?.textValue() ?: "[anonymous]",
+          get("parameters")?.mapValue(parser) ?: mutableMapOf(),
+          get("artifacts")?.listValue(parser) ?: mutableListOf(),
+          get("notifications")?.listValue(parser) ?: mutableListOf(),
+          get("rebake")?.booleanValue() == true,
+          get("dryRun")?.booleanValue() == true,
+          get("strategy")?.booleanValue() == true,
+          get("parentExecutionId").textValue(),
+          get("parentPipelineStageId").textValue()
+        )
         looksLikeCustom() -> {
           // chooses the first custom deserializer to keep behavior consistent
           // with the rest of this conditional
@@ -210,5 +224,7 @@ class TriggerDeserializer :
 
   private fun JsonNode.looksLikeCustom() =
     customTriggerSuppliers.any { it.predicate.invoke(this) }
+
+  private fun JsonNode.looksLikePipelineRefTrigger() = get("type")?.textValue() == "pipelineRef"
 
 }

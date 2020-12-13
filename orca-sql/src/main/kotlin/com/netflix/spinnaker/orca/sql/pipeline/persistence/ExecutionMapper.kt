@@ -21,6 +21,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.netflix.spinnaker.orca.api.pipeline.models.ExecutionType
 import com.netflix.spinnaker.orca.api.pipeline.models.PipelineExecution
 import com.netflix.spinnaker.orca.api.pipeline.models.StageExecution
+import com.netflix.spinnaker.orca.pipeline.model.PipelineRefTrigger
+
 import java.sql.ResultSet
 import org.jooq.DSLContext
 import org.jooq.impl.DSL.field
