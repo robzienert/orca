@@ -164,17 +164,6 @@ class TriggerDeserializer :
           get("binaryUrl").textValue(),
           get("preferred").booleanValue()
         )
-        // private val type: String = "pipelineRef",
-        //  private val correlationId: String? = null,
-        //  private val user: String? = "[anonymous]",
-        //  private val parameters: MutableMap<String, Any> = mutableMapOf(),
-        //  private val artifacts: MutableList<Artifact> = mutableListOf(),
-        //  private val notifications: MutableList<MutableMap<String, Any>> = mutableListOf(),
-        //  private var isRebake: Boolean = false,
-        //  private var isDryRun: Boolean = false,
-        //  private var isStrategy: Boolean = false,
-        //  val parentExecutionId: String,
-        //  val parentPipelineStageId: String? = null
         looksLikePipelineRefTrigger() -> PipelineRefTrigger(
           get("type").textValue(),
           get("correlationId")?.textValue(),
